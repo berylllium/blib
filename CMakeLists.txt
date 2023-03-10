@@ -1,0 +1,19 @@
+cmake_minimum_required(VERSION 3.14)
+
+project(blib C)
+
+set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
+
+set(BLIB_HEADERS
+	container/hashmap.h
+)
+list(TRANSFORM BLIB_HEADERS PREPEND "include/")
+
+set(BLIB_SOURCES
+	container/hashmap.c
+)
+list(TRANSFORM BLIB_SOURCES PREPEND "src/")
+
+add_library(blib SHARED ${BLIB_SOURCES} ${BLIB_HEADERS})
+target_include_directories(blib PUBLIC include/)
