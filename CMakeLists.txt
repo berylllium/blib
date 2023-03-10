@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.21)
 
 project(blib C)
 
@@ -17,3 +17,8 @@ list(TRANSFORM BLIB_SOURCES PREPEND "src/")
 
 add_library(blib SHARED ${BLIB_SOURCES} ${BLIB_HEADERS})
 target_include_directories(blib PUBLIC include/)
+
+# Don't add the test subdirectory if not in the top level.
+if(PROJECT_IS_TOP_LEVEL)
+	add_subdirectory(test)
+endif()

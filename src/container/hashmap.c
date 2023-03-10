@@ -3,43 +3,47 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define HASH_SEED 0x12345678
+#define HASH_SEED 525201411107845655ULL
 #define HASHMAP_CAPACITY_GROWTH_FACTOR 2
 
-static uint32_t hash(const char* str)
+#ifdef _BTESTING
+uint64_t collisions = 0;
+#endif
+
+static uint64_t hash(const char* str)
 {
-	uint32_t h = HASH_SEED;
+	uint64_t h = HASH_SEED;
 
 	while (*str++) {
-        h ^= *str;
-        h *= 0x5bd1e995;
-        h ^= h >> 15;
-    }
-    return h;
+		h ^= *str;
+		h *= 0x5bd1e9955bd1e995;
+		h ^= h >> 47;
+	}
+	return h;
 }
 
-static lise_hashmap_bucket* search_bucket(lise_hashmap* hashmap, const char* key);
+static blib_hashmap_bucket* search_bucket(blib_hashmap* hashmap, const char* key);
 
-static inline void hashmap_resize(lise_hashmap* hashmap, uint64_t new_capacity);
+static inline void hashmap_resize(blib_hashmap* hashmap, uint64_t new_capacity);
 
-lise_hashmap _lise_hashmap_create(uint64_t initial_capacity)
+blib_hashmap _blib_hashmap_create(uint64_t initial_capacity)
 {
-	lise_hashmap hashmap = {};
+	blib_hashmap hashmap = {};
 	hashmap.base_bucket_capacity = initial_capacity;
 
 	// Allocate buckets.
-	hashmap.buckets = calloc(hashmap.base_bucket_capacity, sizeof(lise_hashmap_bucket));
+	hashmap.buckets = calloc(hashmap.base_bucket_capacity, sizeof(blib_hashmap_bucket));
 
 	return hashmap;
 }
 
-void lise_hashmap_free(lise_hashmap* hashmap)
+void blib_hashmap_free(blib_hashmap* hashmap)
 {
 	// Free buckets.
 	for (uint64_t i = 0; i < hashmap->base_bucket_capacity; i++)
 	{
-		lise_hashmap_bucket* current_bucket = hashmap->buckets[i];
-		lise_hashmap_bucket* previous_bucket = NULL;
+		blib_hashmap_bucket* current_bucket = hashmap->buckets[i];
+		blib_hashmap_bucket* previous_bucket = NULL;
 
 		while (current_bucket)
 		{
@@ -49,13 +53,15 @@ void lise_hashmap_free(lise_hashmap* hashmap)
 			free(previous_bucket);
 		}
 	}
+
+	free(hashmap->buckets);
 }
 
-const void* lise_hashmap_get(lise_hashmap* hashmap, const char* key)
+const void* blib_hashmap_get(blib_hashmap* hashmap, const char* key)
 {
 	if (!hashmap || !key) return NULL;
 
-	lise_hashmap_bucket* found_bucket = search_bucket(hashmap, key);
+	blib_hashmap_bucket* found_bucket = search_bucket(hashmap, key);
 
 	if (found_bucket)
 	{
@@ -65,12 +71,12 @@ const void* lise_hashmap_get(lise_hashmap* hashmap, const char* key)
 	return NULL;
 }
 
-void lise_hashmap_set(lise_hashmap* hashmap, const char* key, const void* value)
+void blib_hashmap_set(blib_hashmap* hashmap, const char* key, const void* value)
 {
 	if (!value || !key || !hashmap) return;
 
 	// Check if the key already exists. If so, overwrite the old value.
-	lise_hashmap_bucket* found_bucket = search_bucket(hashmap, key);
+	blib_hashmap_bucket* found_bucket = search_bucket(hashmap, key);
 
 	if (found_bucket)
 	{
@@ -79,12 +85,14 @@ void lise_hashmap_set(lise_hashmap* hashmap, const char* key, const void* value)
 	}
 	
 	// The key does not already exist. Create a new bucket.
-	uint32_t h = hash(key);
+	uint64_t h = hash(key);
 	uint64_t idx = h % hashmap->base_bucket_capacity;
 
-	lise_hashmap_bucket* new_bucket = calloc(1, sizeof(lise_hashmap_bucket));
+	blib_hashmap_bucket* new_bucket = calloc(1, sizeof(blib_hashmap_bucket));
 	new_bucket->key = key;
 	new_bucket->value = value;
+
+	hashmap->total_bucket_count++;
 
 	// Check if there already is a bucket at the calculated index.
 	if (hashmap->buckets[idx])
@@ -93,31 +101,37 @@ void lise_hashmap_set(lise_hashmap* hashmap, const char* key, const void* value)
 		new_bucket->next = hashmap->buckets[idx];
 
 		hashmap->buckets[idx] = new_bucket;
+		
+#ifdef _BTESTING
+		collisions++;
+#endif
 	}
 	else
 	{
 		// There is no bucket at the calculated position. Add bucket to the base buckets.
 		hashmap->buckets[idx] = new_bucket;
 		hashmap->base_bucket_count++;
+	}
 
-		// Check if the capacity has been reached. If so, resize the hashmap.
-		if (hashmap->base_bucket_count == hashmap->base_bucket_capacity)
-		{
-			hashmap_resize(hashmap, hashmap->base_bucket_capacity * HASHMAP_CAPACITY_GROWTH_FACTOR);
-		}
+	// Check if the capacity has been reached or the bucket count is to high. If so, resize the hashmap.
+	if (hashmap->base_bucket_count == hashmap->base_bucket_capacity ||
+		hashmap->total_bucket_count > 1.5 * hashmap->base_bucket_capacity
+	)
+	{
+		hashmap_resize(hashmap, hashmap->base_bucket_capacity * HASHMAP_CAPACITY_GROWTH_FACTOR);
 	}
 }
 
 // Static helper functions
 
-static lise_hashmap_bucket* search_bucket(lise_hashmap* hashmap, const char* key)
+static blib_hashmap_bucket* search_bucket(blib_hashmap* hashmap, const char* key)
 {
 	// Compute the index
-	uint32_t h = hash(key);
+	uint64_t h = hash(key);
 	uint64_t idx = h % hashmap->base_bucket_capacity;
 
 	// Get the initial bucket
-	lise_hashmap_bucket* bucket = hashmap->buckets[idx];
+	blib_hashmap_bucket* bucket = hashmap->buckets[idx];
 
 	if (!bucket)
 	{
@@ -141,28 +155,28 @@ static lise_hashmap_bucket* search_bucket(lise_hashmap* hashmap, const char* key
 	return NULL;
 }
 
-static inline void hashmap_resize(lise_hashmap* hashmap, uint64_t new_capacity)
+static inline void hashmap_resize(blib_hashmap* hashmap, uint64_t new_capacity)
 {
-	lise_hashmap new_hashmap = {};
+#ifdef _BTESTING
+	collisions = 0;
+#endif
 
-	new_hashmap.base_bucket_capacity = new_capacity;
-	new_hashmap.base_bucket_count = hashmap->base_bucket_count;
-	new_hashmap.buckets = calloc(new_hashmap.base_bucket_capacity, sizeof(lise_hashmap_bucket));
+	blib_hashmap new_hashmap = blib_hashmap_create(new_capacity);
 
 	// Traverse through the old hashmap and rehash existing buckets.
 	for (uint64_t i = 0; i < hashmap->base_bucket_capacity; i++)
 	{
-		lise_hashmap_bucket* bucket = hashmap->buckets[i];
+		blib_hashmap_bucket* bucket = hashmap->buckets[i];
 
 		while(bucket)
 		{
-			lise_hashmap_set(&new_hashmap, bucket->key, bucket->value);
+			blib_hashmap_set(&new_hashmap, bucket->key, bucket->value);
 
 			bucket = bucket->next;
 		}
 	}
 
-	lise_hashmap_free(hashmap);
+	blib_hashmap_free(hashmap);
 
 	*hashmap = new_hashmap;
 }
