@@ -7,7 +7,7 @@
 typedef struct blib_hashmap_bucket
 {
 	const char* key;
-	const void* value;
+	void* value;
 
 	struct blib_hashmap_bucket* next;
 } blib_hashmap_bucket;
@@ -30,6 +30,6 @@ blib_hashmap _blib_hashmap_create(uint64_t initial_capacity);
 
 void blib_hashmap_free(blib_hashmap* hashmap);
 
-const void* blib_hashmap_get(blib_hashmap* hashmap, const char* key);
+void* blib_hashmap_get(blib_hashmap* hashmap, const char* key);
 
-void blib_hashmap_set(blib_hashmap* hashmap, const char* key, const void* value);
+void blib_hashmap_set(blib_hashmap* hashmap, const char* key, void* value);

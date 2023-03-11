@@ -57,7 +57,7 @@ void blib_hashmap_free(blib_hashmap* hashmap)
 	free(hashmap->buckets);
 }
 
-const void* blib_hashmap_get(blib_hashmap* hashmap, const char* key)
+void* blib_hashmap_get(blib_hashmap* hashmap, const char* key)
 {
 	if (!hashmap || !key) return NULL;
 
@@ -71,7 +71,7 @@ const void* blib_hashmap_get(blib_hashmap* hashmap, const char* key)
 	return NULL;
 }
 
-void blib_hashmap_set(blib_hashmap* hashmap, const char* key, const void* value)
+void blib_hashmap_set(blib_hashmap* hashmap, const char* key, void* value)
 {
 	if (!value || !key || !hashmap) return;
 
