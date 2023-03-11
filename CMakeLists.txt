@@ -6,11 +6,13 @@ set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 
 set(BLIB_HEADERS
+	container/darray.h
 	container/hashmap.h
 )
 list(TRANSFORM BLIB_HEADERS PREPEND "include/")
 
 set(BLIB_SOURCES
+	container/darray.c
 	container/hashmap.c
 )
 list(TRANSFORM BLIB_SOURCES PREPEND "src/")
