@@ -17,7 +17,7 @@ typedef struct blib_darray
 blib_darray _blib_darray_create(uint64_t default_capacity, uint64_t stride);
 
 #define blib_darray_create(type) \
-	_blib_darray_create(blib_DARRAY_DEFAULT_CAPACITY, sizeof(type))
+	_blib_darray_create(BLIB_DARRAY_DEFAULT_CAPACITY, sizeof(type))
 
 void* blib_darray_get(blib_darray* darray, uint64_t index);
 
