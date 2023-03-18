@@ -14,10 +14,12 @@ typedef struct blib_darray
 	void* data;
 } blib_darray;
 
-blib_darray _blib_darray_create(uint64_t default_capacity, uint64_t stride);
+blib_darray _blib_darray_create(uint64_t stride, uint64_t default_capacity);
 
-#define blib_darray_create(type) \
-	_blib_darray_create(BLIB_DARRAY_DEFAULT_CAPACITY, sizeof(type))
+#define _BDARRAY_CREATE_ONE(x) _blib_darray_create(sizeof(x), BLIB_DARRAY_DEFAULT_CAPACITY)
+#define _BDARRAY_CREATE_TWO(x, y) _blib_darray_create(sizeof(x), y)
+#define _BDARRAY_CREATE_HELPER(_1, _2, NAME, ...) _BDARRAY_CREATE_##NAME
+#define blib_darray_create(...) _BDARRAY_CREATE_HELPER(__VA_OPT__(__VA_ARGS__,) TWO, ONE, EMPTY)(__VA_ARGS__)
 
 void* blib_darray_get(blib_darray* darray, uint64_t index);
 

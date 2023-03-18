@@ -26,7 +26,7 @@ blib_hashmap _blib_hashmap_create(uint64_t initial_capacity);
 #define _BHASHMAP_CREATE_EMPTY() _blib_hashmap_create(BHASHMAP_DEFAULT_CAPACITY)
 #define _BHASHMAP_CREATE_ONE(x) _blib_hashmap_create(x)
 #define _BHASHMAP_CREATE_HELPER(_1, NAME, ...) _BHASHMAP_CREATE_##NAME
-#define blib_hashmap_create(...) _BHASHMAP_CREATE_HELPER(__VA_OPT__(__VA__ARGS__,)ONE, EMPTY)(__VA_ARGS__)
+#define blib_hashmap_create(...) _BHASHMAP_CREATE_HELPER(__VA_OPT__(__VA_ARGS__,)ONE, EMPTY)(__VA_ARGS__)
 
 void blib_hashmap_free(blib_hashmap* hashmap);
 

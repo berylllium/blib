@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-blib_darray _blib_darray_create(uint64_t default_capacity, uint64_t stride)
+blib_darray _blib_darray_create(uint64_t stride, uint64_t default_capacity)
 {
 	blib_darray darray = {};
 
