@@ -21,10 +21,19 @@ blib_darray _blib_darray_create(uint64_t stride, uint64_t default_capacity);
 #define _BDARRAY_CREATE_HELPER(_1, _2, NAME, ...) _BDARRAY_CREATE_##NAME
 #define blib_darray_create(...) _BDARRAY_CREATE_HELPER(__VA_OPT__(__VA_ARGS__,) TWO, ONE, EMPTY)(__VA_ARGS__)
 
+void blib_darray_free(blib_darray* darray);
+
 void* blib_darray_get(blib_darray* darray, uint64_t index);
 
 void blib_darray_push_back(blib_darray* darray, void* element);
 
 void blib_darray_resize(blib_darray* darray, uint64_t new_capacity);
 
-void blib_darray_free(blib_darray* darray);
+/**
+ * @brief Creates and returns a copy of the internally stored data. This will allocate memory on the heap, so do not
+ * forget to free it when the memory is no longer needed.
+ * 
+ * @param darray The darray to create a copy of.
+ * @return void* A pointer to the memory where the copy resides.
+ */
+void* blib_darray_copy_data(blib_darray* darray);

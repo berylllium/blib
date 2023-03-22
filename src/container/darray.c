@@ -48,3 +48,13 @@ void blib_darray_free(blib_darray* darray)
 	darray->data = NULL;
 	darray->size = darray->capacity = darray->stride = 0;
 }
+
+void* blib_darray_copy_data(blib_darray* darray)
+{
+	uint64_t copy_size = darray->stride * darray->size;
+
+	void* ret = malloc(copy_size);
+	memcpy(ret, darray->data, copy_size);
+
+	return ret;
+}
