@@ -50,6 +50,7 @@ void blib_hashmap_free(blib_hashmap* hashmap)
 			previous_bucket = current_bucket;
 			current_bucket = current_bucket->next;
 
+			free(previous_bucket->key);
 			free(previous_bucket);
 		}
 	}
@@ -89,7 +90,7 @@ void blib_hashmap_set(blib_hashmap* hashmap, const char* key, void* value)
 	uint64_t idx = h % hashmap->base_bucket_capacity;
 
 	blib_hashmap_bucket* new_bucket = calloc(1, sizeof(blib_hashmap_bucket));
-	new_bucket->key = key;
+	new_bucket->key = strdup(key);
 	new_bucket->value = value;
 
 	hashmap->total_bucket_count++;

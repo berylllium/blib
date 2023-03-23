@@ -6,7 +6,7 @@
 
 typedef struct blib_hashmap_bucket
 {
-	const char* key;
+	char* key;
 	void* value;
 
 	struct blib_hashmap_bucket* next;
